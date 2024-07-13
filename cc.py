@@ -1,0 +1,45 @@
+import time
+import requests
+import datetime
+
+def read_authorization_data(file_path):
+    with open(file_path, 'r') as file:
+        return [line.strip() for line in file.readlines() if line.strip()]
+
+def post_request(auth_token):
+    url = "https://api.cryptorank.io/v0/tma/account/start-farming"
+    headers = {"Authorization": auth_token}
+    response = requests.post(url, headers=headers)
+    if response.status_code == 201:
+        print("Request successful.")
+    else:
+        print(f"Request failed with status code: {response.status_code}")
+
+def countdown_timer(seconds):
+    while seconds:
+        hours, remainder = divmod(seconds, 3600)
+        minutes, seconds = divmod(remainder, 60)
+        time_format = '{:02}:{:02}:{:02}'.format(hours, minutes, seconds)
+        print(f"Restarting in: {time_format}", end='\r')
+        time.sleep(1)
+        seconds -= 1
+
+def process_accounts():
+    auth_tokens = read_authorization_data('data.txt')
+    total_accounts = len(auth_tokens)
+    print(f"Total accounts: {total_accounts}")
+
+    for idx, auth_token in enumerate(auth_tokens, start=1):
+        print(f"Processing account {idx}/{total_accounts}")
+        post_request(auth_token)
+        if idx < total_accounts:
+            print("Waiting 5 seconds before switching accounts...")
+            time.sleep(5)
+
+    print("All accounts processed. Starting 6-hour countdown...")
+    countdown_timer(6 * 3600)
+
+if __name__ == "__main__":
+    while True:
+        process_accounts()
+        print("Restarting process...")
