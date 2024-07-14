@@ -14,14 +14,15 @@ def post_request(auth_token):
     else:
         print(f"Request failed with status code: {response.status_code}")
 
-def countdown_timer(seconds):
-    while seconds:
-        hours, remainder = divmod(seconds, 3600)
+def countdown_timer(hours):
+    total_seconds = hours * 3600
+    while total_seconds:
+        hours, remainder = divmod(total_seconds, 3600)
         minutes, seconds = divmod(remainder, 60)
         time_format = '{:02}:{:02}:{:02}'.format(hours, minutes, seconds)
         print(f"Restarting in: {time_format}", end='\r')
         time.sleep(1)
-        seconds -= 1
+        total_seconds -= 1
     print("\nCountdown finished. Restarting process...")
 
 def process_accounts():
@@ -37,7 +38,7 @@ def process_accounts():
             time.sleep(5)
     
     print("All accounts processed. Starting 6-hour countdown...")
-    countdown_timer(6 * 3600)
+    countdown_timer(6)
 
 if __name__ == "__main__":
     while True:
