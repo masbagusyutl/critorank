@@ -1,6 +1,5 @@
 import time
 import requests
-import datetime
 
 def read_authorization_data(file_path):
     with open(file_path, 'r') as file:
@@ -23,6 +22,7 @@ def countdown_timer(seconds):
         print(f"Restarting in: {time_format}", end='\r')
         time.sleep(1)
         seconds -= 1
+    print("\nCountdown finished. Restarting process...")
 
 def process_accounts():
     auth_tokens = read_authorization_data('data.txt')
@@ -35,11 +35,10 @@ def process_accounts():
         if idx < total_accounts:
             print("Waiting 5 seconds before switching accounts...")
             time.sleep(5)
-
+    
     print("All accounts processed. Starting 6-hour countdown...")
     countdown_timer(6 * 3600)
 
 if __name__ == "__main__":
     while True:
         process_accounts()
-        print("Restarting process...")
