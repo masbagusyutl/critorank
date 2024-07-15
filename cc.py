@@ -9,9 +9,9 @@ def post_request(url, auth_token):
     headers = {"Authorization": auth_token}
     response = requests.post(url, headers=headers)
     if response.status_code == 201:
-        print(f"Request to {url} successful.")
+        print("Request successful.")
     else:
-        print(f"Request to {url} failed with status code: {response.status_code}")
+        print(f"Request failed with status code: {response.status_code}")
 
 def countdown_timer(hours):
     total_seconds = hours * 3600
