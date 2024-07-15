@@ -5,14 +5,13 @@ def read_authorization_data(file_path):
     with open(file_path, 'r') as file:
         return [line.strip() for line in file.readlines() if line.strip()]
 
-def post_request(auth_token):
-    url = "https://api.cryptorank.io/v0/tma/account/start-farming"
+def post_request(url, auth_token):
     headers = {"Authorization": auth_token}
     response = requests.post(url, headers=headers)
     if response.status_code == 201:
-        print("Request successful.")
+        print(f"Request to {url} successful.")
     else:
-        print(f"Request failed with status code: {response.status_code}")
+        print(f"Request to {url} failed with status code: {response.status_code}")
 
 def countdown_timer(hours):
     total_seconds = hours * 3600
@@ -32,7 +31,13 @@ def process_accounts():
 
     for idx, auth_token in enumerate(auth_tokens, start=1):
         print(f"Processing account {idx}/{total_accounts}")
-        post_request(auth_token)
+        # End farming
+        print("Ending farming...")
+        post_request("https://api.cryptorank.io/v0/tma/account/end-farming", auth_token)
+        time.sleep(5)  # Wait 5 seconds before starting farming
+        # Start farming
+        print("Starting farming...")
+        post_request("https://api.cryptorank.io/v0/tma/account/start-farming", auth_token)
         if idx < total_accounts:
             print("Waiting 5 seconds before switching accounts...")
             time.sleep(5)
