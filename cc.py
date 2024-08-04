@@ -9,9 +9,19 @@ def post_request(url, auth_token):
     headers = {"Authorization": auth_token}
     response = requests.post(url, headers=headers)
     if response.status_code == 201:
-        print("Request successful.")
+        return response.json()
     else:
-        print(f"Request failed with status code: {response.status_code}")
+        print(f"Request to {url} failed with status code: {response.status_code}")
+        return None
+
+def get_request(url, auth_token):
+    headers = {"Authorization": auth_token}
+    response = requests.get(url, headers=headers)
+    if response.status_code == 200:
+        return response.json()
+    else:
+        print(f"Request to {url} failed with status code: {response.status_code}")
+        return None
 
 def countdown_timer(hours):
     total_seconds = hours * 3600
@@ -24,6 +34,20 @@ def countdown_timer(hours):
         total_seconds -= 1
     print("\nCountdown finished. Restarting process...")
 
+def process_tasks(auth_token):
+    tasks = get_request("https://api.cryptorank.io/v0/tma/account/tasks", auth_token)
+    if tasks:
+        for task in tasks:
+            if not task['isDone']:
+                task_id = task['id']
+                task_name = task['name']
+                print(f"Processing task: {task_name}")
+                task_claim_url = f"https://api.cryptorank.io/v0/tma/account/claim/task/{task_id}"
+                response = post_request(task_claim_url, auth_token)
+                if response:
+                    print(f"Task {task_name} completed: {response}")
+                time.sleep(2)  # Wait 2 seconds between each task
+
 def process_accounts():
     auth_tokens = read_authorization_data('data.txt')
     total_accounts = len(auth_tokens)
@@ -31,13 +55,29 @@ def process_accounts():
 
     for idx, auth_token in enumerate(auth_tokens, start=1):
         print(f"Processing account {idx}/{total_accounts}")
+
         # End farming
         print("Ending farming...")
-        post_request("https://api.cryptorank.io/v0/tma/account/end-farming", auth_token)
+        end_response = post_request("https://api.cryptorank.io/v0/tma/account/end-farming", auth_token)
+        if end_response:
+            balance = end_response.get('balance')
+            print(f"Balance after ending farming: {balance}")
+        
         time.sleep(5)  # Wait 5 seconds before starting farming
+
         # Start farming
         print("Starting farming...")
         post_request("https://api.cryptorank.io/v0/tma/account/start-farming", auth_token)
+
+        # Get account info
+        account_info = get_request("https://api.cryptorank.io/v0/tma/account", auth_token)
+        if account_info:
+            balance = account_info.get('balance')
+            print(f"Account balance: {balance}")
+
+        # Process tasks
+        process_tasks(auth_token)
+        
         if idx < total_accounts:
             print("Waiting 5 seconds before switching accounts...")
             time.sleep(5)
