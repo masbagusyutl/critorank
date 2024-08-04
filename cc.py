@@ -11,7 +11,7 @@ def post_request(url, auth_token):
     if response.status_code == 201:
         return response.json()
     else:
-        print(f"Request to {url} failed with status code: {response.status_code}")
+        print(f"Failed with status code: {response.status_code}")
         return None
 
 def get_request(url, auth_token):
@@ -20,7 +20,7 @@ def get_request(url, auth_token):
     if response.status_code == 200:
         return response.json()
     else:
-        print(f"Request to {url} failed with status code: {response.status_code}")
+        print(f"Failed with status code: {response.status_code}")
         return None
 
 def countdown_timer(hours):
@@ -38,16 +38,18 @@ def process_tasks(auth_token):
     tasks = get_request("https://api.cryptorank.io/v0/tma/account/tasks", auth_token)
     if tasks:
         for task in tasks:
+            task_name = task['name']
             if not task['isDone']:
-                task_id = task['id']
-                task_name = task['name']
                 print(f"Processing task: {task_name}")
+                task_id = task['id']
                 task_claim_url = f"https://api.cryptorank.io/v0/tma/account/claim/task/{task_id}"
                 response = post_request(task_claim_url, auth_token)
                 if response:
                     balance = response.get('balance', 'Unknown')
                     print(f"Task {task_name} completed. Balance: {balance}")
                 time.sleep(2)  # Wait 2 seconds between each task
+            else:
+                print(f"Task {task_name} is already completed.")
 
 def process_accounts():
     auth_tokens = read_authorization_data('data.txt')
